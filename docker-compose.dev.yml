@@ -1,0 +1,129 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: wfh_mysql_dev
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: wfh_attendance
+      MYSQL_USER: wfh_user
+      MYSQL_PASSWORD: wfh_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_dev_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - wfh_network
+
+  auth-service:
+    build:
+      context: ./services/auth
+      dockerfile: Dockerfile.dev
+    container_name: wfh_auth_service_dev
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USERNAME=wfh_user
+      - DB_PASSWORD=wfh_password
+      - DB_DATABASE=wfh_attendance
+      - JWT_SECRET=dev-jwt-secret-key
+      - PORT=3001
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./services/auth:/app
+      - /app/node_modules
+    depends_on:
+      - mysql
+    networks:
+      - wfh_network
+    command: npm run start:dev
+
+  employee-service:
+    build:
+      context: ./services/employee
+      dockerfile: Dockerfile.dev
+    container_name: wfh_employee_service_dev
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USERNAME=wfh_user
+      - DB_PASSWORD=wfh_password
+      - DB_DATABASE=wfh_attendance
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - JWT_SECRET=dev-jwt-secret-key
+      - PORT=3002
+    ports:
+      - "3002:3002"
+    volumes:
+      - ./services/employee:/app
+      - /app/node_modules
+    depends_on:
+      - mysql
+      - auth-service
+    networks:
+      - wfh_network
+    command: npm run start:dev
+
+  attendance-service:
+    build:
+      context: ./services/attendance
+      dockerfile: Dockerfile.dev
+    container_name: wfh_attendance_service_dev
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USERNAME=wfh_user
+      - DB_PASSWORD=wfh_password
+      - DB_DATABASE=wfh_attendance
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - EMPLOYEE_SERVICE_URL=http://employee-service:3002
+      # - EMPLOYEE_SERVICE_URL=http://employee-service:3000
+      - JWT_SECRET=dev-jwt-secret-key
+      - PORT=3003
+    ports:
+      - "3003:3003"
+    volumes:
+      - ./services/attendance:/app
+      - /app/node_modules
+      - ./uploads:/app/uploads
+    depends_on:
+      - mysql
+      - auth-service
+    networks:
+      - wfh_network
+    command: npm run start:dev
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: wfh_frontend_dev
+    environment:
+      - REACT_APP_AUTH_SERVICE_URL=http://localhost:3001
+      - REACT_APP_EMPLOYEE_SERVICE_URL=http://localhost:3002
+      - REACT_APP_ATTENDANCE_SERVICE_URL=http://localhost:3003
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      # - /app/node_modules
+    depends_on:
+      - auth-service
+      - employee-service
+      - attendance-service
+    networks:
+      - wfh_network
+    command: npm run dev
+
+volumes:
+  mysql_dev_data:
+
+networks:
+  wfh_network:
+    driver: bridge

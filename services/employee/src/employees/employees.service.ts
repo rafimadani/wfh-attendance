@@ -1,0 +1,114 @@
+/**
+ * EMPLOYEES SERVICE - CRUD operations for employee management
+ *
+ * This service handles all employee-related database operations:
+ * - Creating new employee records with unique employee IDs
+ * - Retrieving employee information for HR dashboard
+ * - Updating employee details with validation
+ * - Generating employee statistics
+ *
+ * Key concepts:
+ * - Unique constraints: Employee IDs must be unique across the system
+ * - Status management: Employees can be active/inactive
+ * - User relationship: Employees are linked to User accounts for authentication
+ */
+
+import { Injectable, NotFoundException, ConflictException } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { Employee } from "./entities/employee.entity";
+import { CreateEmployeeDto } from "./dto/create-employee.dto";
+import { UpdateEmployeeDto } from "./dto/update-employee.dto";
+
+@Injectable()
+export class EmployeesService {
+  constructor(
+    @InjectRepository(Employee)
+    private readonly employeesRepository: Repository<Employee>,
+  ) {}
+
+  async create(createEmployeeDto: CreateEmployeeDto): Promise<Employee> {
+    const existing = await this.employeesRepository.findOne({
+      where: { employeeId: createEmployeeDto.employeeId },
+    });
+    if (existing) {
+      throw new ConflictException("Employee with this ID already exists");
+    }
+
+    const employee = this.employeesRepository.create(createEmployeeDto);
+    return this.employeesRepository.save(employee);
+  }
+
+  async findAll(): Promise<Employee[]> {
+    return this.employeesRepository.find({
+      order: { createdAt: "DESC" },
+    });
+  }
+
+  async findOne(id: number): Promise<Employee> {
+    const employee = await this.employeesRepository.findOneBy({ id });
+    if (!employee) {
+      throw new NotFoundException(`Employee with ID ${id} not found`);
+    }
+    return employee;
+  }
+
+  // employees.service.ts
+  async search(name?: string, position?: string): Promise<Employee[]> {
+    const qb = this.employeesRepository.createQueryBuilder("employee");
+
+    if (name) {
+      qb.andWhere(
+        "LOWER(employee.firstName) LIKE LOWER(:name) OR LOWER(employee.lastName) LIKE LOWER(:name) OR LOWER(CONCAT(employee.firstName, ' ', employee.lastName)) LIKE LOWER(:name)",
+        { name: `%${name}%` },
+      );
+    }
+
+    if (position) {
+      qb.andWhere("LOWER(employee.position) LIKE LOWER(:position)", {
+        position: `%${position}%`,
+      });
+    }
+
+    return qb.orderBy("employee.createdAt", "DESC").getMany();
+  }
+
+
+  async findByUserId(userId: number): Promise<Employee | null> {
+    return this.employeesRepository.findOne({ where: { userId } });
+  }
+
+  async findByEmployeeId(employeeId: string): Promise<Employee | null> {
+    return this.employeesRepository.findOne({ where: { employeeId } });
+  }
+
+  async update(id: number, updateEmployeeDto: UpdateEmployeeDto): Promise<Employee> {
+    const employee = await this.findOne(id);
+
+    // Check if updating employeeId conflicts with another record
+    if (updateEmployeeDto.employeeId && updateEmployeeDto.employeeId !== employee.employeeId) {
+      const conflict = await this.findByEmployeeId(updateEmployeeDto.employeeId);
+      if (conflict) {
+        throw new ConflictException("Employee ID already in use");
+      }
+    }
+
+    Object.assign(employee, updateEmployeeDto);
+    return this.employeesRepository.save(employee);
+  }
+
+  async remove(id: number): Promise<void> {
+    const employee = await this.findOne(id);
+    await this.employeesRepository.remove(employee);
+  }
+
+
+  async getEmployeeStats() {
+    // TODO: Count total employees
+    // TODO: Count active employees (status: "active")
+    // TODO: Count inactive employees (status: "inactive")
+    // TODO: Return statistics object with total, active, inactive counts
+    // Hint: Use this.employeesRepository.count() with where conditions
+    throw new Error("TODO: Implement employee statistics")
+  }
+}
