@@ -65,7 +65,16 @@ let AuthService = class AuthService {
         };
     }
     async getProfile(userId) {
-        throw new Error("TODO: Implement get profile");
+        const user = await this.usersService.findById(userId);
+        if (!user) {
+            throw new common_1.UnauthorizedException("User not found");
+        }
+        return {
+            id: user.id,
+            email: user.email,
+            role: user.role,
+            createdAt: user.createdAt,
+        };
     }
 };
 exports.AuthService = AuthService;

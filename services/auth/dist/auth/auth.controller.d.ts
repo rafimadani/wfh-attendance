@@ -20,7 +20,12 @@ export declare class AuthController {
             role: import("../users/entities/user.entity").UserRole;
         };
     }>;
-    getProfile(req: any): Promise<void>;
+    getProfile(req: any): Promise<{
+        id: number;
+        email: string;
+        role: import("../users/entities/user.entity").UserRole;
+        createdAt: Date;
+    }>;
     verifyToken(req: any): Promise<{
         valid: boolean;
         user: {

@@ -43,6 +43,7 @@ export const Login: React.FC = () => {
       await login(email, password)
       // Successful login will trigger redirect via useEffect
     } catch (err: any) {
+      console.log(err)
       setError(err.response?.data?.message || err.message || "Login failed")
     } finally {
       setLoading(false)

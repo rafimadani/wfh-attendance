@@ -25,5 +25,10 @@ export declare class AuthService {
             role: UserRole;
         };
     }>;
-    getProfile(userId: number): Promise<void>;
+    getProfile(userId: number): Promise<{
+        id: number;
+        email: string;
+        role: UserRole;
+        createdAt: Date;
+    }>;
 }

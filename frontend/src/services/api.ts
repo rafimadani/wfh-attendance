@@ -30,8 +30,14 @@ attendanceAPI.interceptors.request.use(addAuthToken)
 // Handle auth errors
 const handleAuthError = (error: any) => {
   if (error.response?.status === 401) {
-    localStorage.removeItem("token")
-    window.location.href = "/login"
+    const onLoginPage = window.location.pathname === "/login"
+
+    if (!onLoginPage) {
+      // kalau user udah di halaman lain (token expired) → redirect
+      localStorage.removeItem("token")
+      window.location.href = "/login"
+    }
+    // kalau lagi di halaman login → jangan reload, biarin komponen Login nampilin error
   }
   return Promise.reject(error)
 }

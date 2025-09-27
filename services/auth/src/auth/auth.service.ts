@@ -100,9 +100,17 @@ export class AuthService {
     };
   }
   async getProfile(userId: number) {
-    // TODO: Find user by ID using this.usersService.findById()
-    // TODO: If user not found, throw UnauthorizedException with "User not found"
-    // TODO: Return user profile (id, email, role, createdAt) - exclude password!
-    throw new Error("TODO: Implement get profile")
+    const user = await this.usersService.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException("User not found");
+    }
+
+    // Exclude sensitive fields like password
+    return {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      createdAt: user.createdAt,
+    };
   }
 }
