@@ -27,7 +27,7 @@ let AttendanceController = class AttendanceController {
     constructor(attendanceService) {
         this.attendanceService = attendanceService;
     }
-    async create(photo, req, employeeId) {
+    async create(photo, req, employeeId, notes) {
         if (!photo)
             throw new common_1.BadRequestException("Photo is required for attendance");
         let empId;
@@ -79,8 +79,9 @@ __decorate([
     __param(0, (0, common_1.UploadedFile)()),
     __param(1, (0, common_1.Request)()),
     __param(2, (0, common_1.Query)("employeeId")),
+    __param(3, (0, common_1.Body)("notes")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object, String]),
+    __metadata("design:paramtypes", [Object, Object, String, String]),
     __metadata("design:returntype", Promise)
 ], AttendanceController.prototype, "create", null);
 __decorate([

@@ -3,7 +3,7 @@ import { UpdateAttendanceDto } from "./dto/update-attendance.dto";
 export declare class AttendanceController {
     private readonly attendanceService;
     constructor(attendanceService: AttendanceService);
-    create(photo: Express.Multer.File, req: any, employeeId?: string): Promise<import("./entities/attendance.entity").Attendance>;
+    create(photo: Express.Multer.File, req: any, employeeId?: string, notes?: string): Promise<import("./entities/attendance.entity").Attendance>;
     findAll(page?: number, limit?: number): Promise<{
         data: import("./entities/attendance.entity").Attendance[];
         total: number;

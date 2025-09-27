@@ -76,6 +76,7 @@ export class AttendanceService {
       employeeId: employee.id, // simpan PK employee.id
       photoPath,
       checkInTime: new Date(),
+      notes: createAttendanceDto.notes,
     })
 
     return this.attendanceRepository.save(record)
@@ -127,4 +128,5 @@ export class AttendanceService {
       where: { employeeId, checkInTime: Between(startOfDay, endOfDay) },
     })
   }
+  
 }

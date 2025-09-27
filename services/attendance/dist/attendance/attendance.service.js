@@ -62,6 +62,7 @@ let AttendanceService = class AttendanceService {
             employeeId: employee.id,
             photoPath,
             checkInTime: new Date(),
+            notes: createAttendanceDto.notes,
         });
         return this.attendanceRepository.save(record);
     }

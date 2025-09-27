@@ -25,19 +25,20 @@ export const Dashboard: React.FC = () => {
     const fetchData = async () => {
       try {
         if (user?.role === "hr") {
-          const [attendanceStats, empStats] = await Promise.all([
-            attendanceService.getStats(),
+          const [empStats] = await Promise.all([
+            // attendanceService.getStats(),
             employeeService.getStats(),
           ])
-          setStats(attendanceStats)
+          // setStats(attendanceStats)
           setEmployeeStats(empStats)
         } else {
-          const [attendanceStats, todayRecord] = await Promise.all([
-            attendanceService.getMyStats(),
+          const [todayRecord] = await Promise.all([
+            // attendanceService.getMyStats(),
             attendanceService.getTodayAttendance(),
           ])
-          setStats(attendanceStats)
+          // setStats(attendanceStats)
           setTodayAttendance(todayRecord)
+          console.log("Today attendance:", todayRecord)
         }
       } catch (error) {
         console.error("Error fetching dashboard data:", error)

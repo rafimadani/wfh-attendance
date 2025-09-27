@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   Post,
@@ -45,6 +46,7 @@ export class AttendanceController {
     @UploadedFile() photo: Express.Multer.File,
     @Request() req,
     @Query("employeeId") employeeId?: string,
+    @Body("notes") notes?: string,
   ) {
     if (!photo) throw new BadRequestException("Photo is required for attendance")
 
