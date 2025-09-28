@@ -17,7 +17,7 @@ import { RolesGuard } from "../auth/guards/roles.guard"
   controllers: [AttendanceController],
   providers: [
     AttendanceService,
-    RolesGuard,   // ✅ sama kayak EmployeeModule
+    RolesGuard,   
   ],
   exports: [AttendanceService],
 })

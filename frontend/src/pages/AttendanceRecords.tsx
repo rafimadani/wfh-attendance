@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { attendanceService } from "../services/attendanceService"
-import { employeeService } from "../services/employeeService" // 👈 added
+import { employeeService } from "../services/employeeService"
 
 interface AttendanceRecord {
   id: number
@@ -16,6 +16,7 @@ interface AttendanceRecord {
     firstName: string
     lastName: string
     department: string
+    userId: number
   }
 }
 
@@ -34,13 +35,18 @@ export const AttendanceRecords: React.FC = () => {
       const response = await attendanceService.getAll(currentPage, 10)
       const employees = await employeeService.getAll()
 
-      // enrich attendance with employee info
+      // enrich attendance with employee info + userId
       const enriched = response.data.map((r: any) => {
         const emp = employees.find((e: any) => e.id === r.employeeId)
         return {
           ...r,
           employee: emp
-            ? { firstName: emp.firstName, lastName: emp.lastName, department: emp.department }
+            ? {
+                firstName: emp.firstName,
+                lastName: emp.lastName,
+                department: emp.department,
+                userId: emp.employeeId, // 👈 include userId
+              }
             : null,
         }
       })
@@ -79,6 +85,9 @@ export const AttendanceRecords: React.FC = () => {
                     Employee
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Department
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
@@ -90,9 +99,9 @@ export const AttendanceRecords: React.FC = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Photo
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  {/* <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Notes
-                  </th>
+                  </th> */}
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -103,6 +112,11 @@ export const AttendanceRecords: React.FC = () => {
                       {record.employee
                         ? `${record.employee.firstName} ${record.employee.lastName}`
                         : `ID: ${record.employeeId}`}
+                    </td>
+
+                    {/* ✅ User ID */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                      {record.employee?.userId || "-"}
                     </td>
 
                     {/* ✅ Department */}
@@ -142,9 +156,9 @@ export const AttendanceRecords: React.FC = () => {
                     </td>
 
                     {/* Notes */}
-                    <td className="px-6 py-4 text-sm text-foreground max-w-xs truncate">
+                    {/* <td className="px-6 py-4 text-sm text-foreground max-w-xs truncate">
                       {record.notes || "-"}
-                    </td>
+                    </td> */}
                   </tr>
                 ))}
               </tbody>

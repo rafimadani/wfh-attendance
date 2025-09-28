@@ -44,12 +44,21 @@ CREATE TABLE IF NOT EXISTS attendance (
 
 -- Insert default HR user
 INSERT INTO users (email, password, role) VALUES 
-('hr@company.com', '$2b$10$rQZ8kHWKtGkVQZ8kHWKtGOyQZ8kHWKtGkVQZ8kHWKtGkVQZ8kHWKtG', 'hr');
+('hr@company.com', '$2b$10$8UCC8TMeU/ZF3XSd3DImQO0oTDVuOB6hBJ1Ll7MT36YAvuayCvJnm', 'hr');
 
 -- Insert default employee user
 INSERT INTO users (email, password, role) VALUES 
-('employee@company.com', '$2b$10$rQZ8kHWKtGkVQZ8kHWKtGOyQZ8kHWKtGkVQZ8kHWKtGkVQZ8kHWKtG', 'employee');
+('employee@company.com', '$2b$10$8UCC8TMeU/ZF3XSd3DImQO0oTDVuOB6hBJ1Ll7MT36YAvuayCvJnm', 'employee');
 
 -- Insert sample employee data
-INSERT INTO employees (user_id, employee_id, first_name, last_name, department, position, phone, hire_date) VALUES 
-(2, 'EMP001', 'John', 'Doe', 'IT', 'Software Developer', '+1234567890', '2024-01-15');
+INSERT INTO employees (user_id, employee_id, first_name, last_name, department, position, phone, hire_date) 
+VALUES (
+    (SELECT id FROM users WHERE email = 'employee@company.com' LIMIT 1),
+    'EMP001',
+    'John',
+    'Doe',
+    'IT',
+    'Software Developer',
+    '+1234567890',
+    '2024-01-15'
+);

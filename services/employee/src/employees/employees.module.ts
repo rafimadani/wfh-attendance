@@ -11,7 +11,7 @@ import { HttpModule } from "@nestjs/axios"; // 👈 add this
 @Module({
   imports: [TypeOrmModule.forFeature([Employee]), AuthModule,HttpModule],
   controllers: [EmployeesController],
-  providers: [EmployeesService, RolesGuard],  // ✅ Hapus Reflector
+  providers: [EmployeesService, RolesGuard],  
   exports: [EmployeesService],
   
 })

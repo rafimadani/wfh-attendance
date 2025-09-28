@@ -63,9 +63,9 @@ export class AttendanceController {
     const authHeader = req.headers.authorization
 
     return this.attendanceService.create(
-      { employeeId: empId },
+      { employeeId: empId, notes },
       photo.path,
-      authHeader,    // 👈 pass ke service
+      authHeader,    
     )
   }
 
@@ -87,13 +87,7 @@ export class AttendanceController {
     return this.attendanceService.findByEmployee(employeeId, page, limit)
   }
 
-  // @Get("stats")
-  // @UseGuards(RolesGuard)
-  // @Roles(UserRole.HR)
-  // getStats(@Query("employeeId") employeeId?: string) {
-  //   const empId = employeeId ? Number.parseInt(employeeId) : undefined
-  //   return this.attendanceService.getAttendanceStats(empId)
-  // }
+
 
   @Get("my-attendance")
   async getMyAttendance(@Request() req, @Query("page") page = 1, @Query("limit") limit = 10) {

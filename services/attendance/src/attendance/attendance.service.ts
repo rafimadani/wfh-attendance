@@ -39,7 +39,7 @@ export class AttendanceService {
           `${this.employeeServiceUrl}/employees/by-user/${createAttendanceDto.employeeId}`,
           {
             headers: {
-              Authorization: authHeader, // 🔑 forward token
+              Authorization: authHeader, 
             },
           },
         ),
@@ -71,9 +71,8 @@ export class AttendanceService {
       throw new BadRequestException("Attendance already recorded for today")
     }
 
-    // 🔎 Step 3: Save record
     const record = this.attendanceRepository.create({
-      employeeId: employee.id, // simpan PK employee.id
+      employeeId: employee.id, 
       photoPath,
       checkInTime: new Date(),
       notes: createAttendanceDto.notes,

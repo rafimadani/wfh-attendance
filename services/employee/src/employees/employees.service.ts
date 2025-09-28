@@ -163,7 +163,6 @@ export class EmployeesService {
         ),
       );
     } catch (err) {
-      // console.error("❌ Failed to delete user in Auth service:", err.response?.data || err.message);
       throw new BadRequestException("Failed to delete linked user, employee not deleted");
     }
   }
@@ -173,55 +172,6 @@ export class EmployeesService {
 
 
 
-
-//   async registerWithUser(
-//   email: string,
-//   password: string,
-//   employeeData: any,
-//   authHeader?: string,
-// ) {
-//     let user;
-//     try {
-//       // Step 1: Create user via Auth Service
-//       const response = await firstValueFrom(
-//         this.httpService.post(
-//           `${this.authServiceUrl}/auth/register`,
-//           { email, password, role: "employee" }, // enforce employee role
-//           { headers: { Authorization: authHeader } },
-//         ),
-//       );
-//       user = response.data.user;
-//     } catch (err) {
-//       console.error("❌ Error creating user:", err.response?.data || err.message);
-//       throw new BadRequestException("Failed to create user");
-//     }
-
-//     try {
-//       // Step 2: Create employee linked with user.id
-//       const employee = this.employeeRepository.create({
-//         ...employeeData,
-//         userId: user.id,
-//       });
-//       return await this.employeeRepository.save(employee);
-//     } catch (err) {
-//       console.error("❌ Error creating employee, rolling back user:", err);
-
-//       // Step 3: Rollback user if employee creation fails
-//       if (user?.id) {
-//         try {
-//           await firstValueFrom(
-//             this.httpService.delete(`${this.authServiceUrl}/users/${user.id}`, {
-//               headers: { Authorization: authHeader },
-//             }),
-//           );
-//         } catch (rollbackErr) {
-//           console.error("⚠️ Failed to rollback user:", rollbackErr.message);
-//         }
-//       }
-
-//       throw new BadRequestException("Failed to create employee");
-//     }
-//   }
 
 
   async getEmployeeStats() {

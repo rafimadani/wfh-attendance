@@ -30,10 +30,7 @@ export class AuthService {
   ) {}
 
   async validateUser(email: string, password: string): Promise<User | null> {
-    // TODO: Find user by email using UsersService
-    // TODO: Validate the provided password against the stored hash
-    // TODO: Return the user if valid, null if invalid
-    // Hint: Use this.usersService.findByEmail() and this.usersService.validatePassword()
+
     const user = await this.usersService.findByEmail(email);
     if (!user) {
       return null; // no user found
@@ -49,11 +46,7 @@ export class AuthService {
 
 
   async login(loginDto: LoginDto) {
-    // TODO: Validate user credentials using validateUser method
-    // TODO: If invalid, throw UnauthorizedException with "Invalid credentials"
-    // TODO: Create JWT payload with user id, email, and role
-    // TODO: Generate access token using this.jwtService.sign()
-    // TODO: Return object with access_token and user info (id, email, role)
+    
     const user = await this.validateUser(loginDto.email,loginDto.password)
     if (!user){
       throw new UnauthorizedException('Invalid credentials')
@@ -69,28 +62,22 @@ export class AuthService {
       },
     };
 
-    // throw new Error("TODO: Implement login logic")
 
   }
 
     async register(registerDto: RegisterDto) {
-    // 1. Map RegisterDto → CreateUserDto
     const createUserDto: CreateUserDto = {
       email: registerDto.email,
       password: registerDto.password,
       role: UserRole.EMPLOYEE, // enforce default role
     };
 
-    // 2. Create user in DB
     const user = await this.usersService.create(createUserDto);
 
-    // 3. Build JWT payload
     const payload = { sub: user.id, email: user.email, role: user.role };
 
-    // 4. Sign JWT
     const access_token = this.jwtService.sign(payload);
 
-    // 5. Return response
     return {
       access_token,
       user: {
@@ -106,7 +93,6 @@ export class AuthService {
       throw new UnauthorizedException("User not found");
     }
 
-    // Exclude sensitive fields like password
     return {
       id: user.id,
       email: user.email,

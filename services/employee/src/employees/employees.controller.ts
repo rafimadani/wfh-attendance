@@ -25,12 +25,7 @@ export class EmployeesController {
     return this.employeesService.findAll()
   }
 
-  // @Get("stats")
-  // @UseGuards(RolesGuard)
-  // @Roles(UserRole.HR)
-  // getStats() {
-  //   return this.employeesService.getEmployeeStats()
-  // }
+
 
   @Get(':id')
   @UseGuards(RolesGuard)
@@ -49,18 +44,12 @@ export class EmployeesController {
     return this.employeesService.update(id, updateEmployeeDto);
   }
 
-  // @Delete(':id')
-  // @UseGuards(RolesGuard)
-  // @Roles(UserRole.HR)
-  // remove(@Param('id', ParseIntPipe) id: number) {
-  //   return this.employeesService.remove(id);
-  // }
 
     @Delete(":id")
     @UseGuards(RolesGuard)
     @Roles(UserRole.HR)
     remove(@Param("id", ParseIntPipe) id: number, @Req() req) {
-      return this.employeesService.remove(id, req.headers.authorization); // 👈 pass JWT here
+      return this.employeesService.remove(id, req.headers.authorization); 
     }
 
   @Post("with-user")
@@ -69,7 +58,7 @@ export class EmployeesController {
   async createWithUser(@Body() body: any, @Req() req) {
     return this.employeesService.createWithUser({
       ...body,
-      authHeader: req.headers.authorization, // 👈 forward JWT if needed
+      authHeader: req.headers.authorization, 
     });
   }
 }

@@ -40,7 +40,7 @@ let AttendanceController = class AttendanceController {
             empId = Number(employeeId);
         }
         const authHeader = req.headers.authorization;
-        return this.attendanceService.create({ employeeId: empId }, photo.path, authHeader);
+        return this.attendanceService.create({ employeeId: empId, notes }, photo.path, authHeader);
     }
     findAll(page = 1, limit = 10) {
         return this.attendanceService.findAll(page, limit);
