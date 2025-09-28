@@ -25,12 +25,12 @@ export const Dashboard: React.FC = () => {
     const fetchData = async () => {
       try {
         if (user?.role === "hr") {
-          const [empStats] = await Promise.all([
-            // attendanceService.getStats(),
-            employeeService.getStats(),
-          ])
-          // setStats(attendanceStats)
-          setEmployeeStats(empStats)
+          // const [empStats] = await Promise.all([
+          //   // attendanceService.getStats(),
+          //   employeeService.getStats(),
+          // ])
+          // // setStats(attendanceStats)
+          // setEmployeeStats(empStats)
         } else {
           const [todayRecord] = await Promise.all([
             // attendanceService.getMyStats(),
