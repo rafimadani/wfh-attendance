@@ -15,6 +15,10 @@ export const employeeService = {
     const response = await employeeAPI.post("/employees", data)
     return response.data
   },
+  async createWithUser(data: any) {
+  const response = await employeeAPI.post("/employees/with-user", data)
+  return response.data
+  },
 
   async update(id: number, data: any) {
     const response = await employeeAPI.patch(`/employees/${id}`, data)

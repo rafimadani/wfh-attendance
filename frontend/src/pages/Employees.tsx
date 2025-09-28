@@ -30,6 +30,8 @@ export const Employees: React.FC = () => {
     phone: "",
     hireDate: "",
     status: "active" as "active" | "inactive",
+    email: "",
+    password: "",
   })
 
   useEffect(() => {
@@ -53,12 +55,13 @@ export const Employees: React.FC = () => {
       if (editingEmployee) {
         await employeeService.update(editingEmployee.id, formData)
       } else {
-        await employeeService.create(formData)
+        await employeeService.createWithUser(formData)
       }
       await fetchEmployees()
       resetForm()
     } catch (error) {
       console.error("Error saving employee:", error)
+      alert("Failed to save employee. Please check the console for details.")
     }
   }
 
@@ -73,6 +76,8 @@ export const Employees: React.FC = () => {
       phone: employee.phone || "",
       hireDate: employee.hireDate || "",
       status: employee.status,
+      email: "", // email not editable in this mode
+      password: "",
     })
     setShowForm(true)
   }
@@ -98,6 +103,8 @@ export const Employees: React.FC = () => {
       phone: "",
       hireDate: "",
       status: "active",
+      email: "",
+      password: "",
     })
     setEditingEmployee(null)
     setShowForm(false)
@@ -127,6 +134,33 @@ export const Employees: React.FC = () => {
           </div>
           <div className="card-content">
             <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* email & password only show when creating new */}
+              {!editingEmployee && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1">Email *</label>
+                    <input
+                      type="email"
+                      required
+                      className="input"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-1">Password *</label>
+                    <input
+                      type="password"
+                      required
+                      className="input"
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    />
+                  </div>
+                </>
+              )}
+
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1">Employee ID *</label>
                 <input
@@ -204,6 +238,7 @@ export const Employees: React.FC = () => {
                   <option value="inactive">Inactive</option>
                 </select>
               </div>
+
               <div className="md:col-span-2 flex space-x-4">
                 <button type="submit" className="btn-primary">
                   {editingEmployee ? "Update" : "Create"} Employee

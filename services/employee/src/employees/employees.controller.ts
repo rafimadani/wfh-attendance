@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Param, Delete, UseGuards, ParseIntPipe, Body, Req } from "@nestjs/common";
+import { Controller, Get, Post, Patch, Param, Delete, UseGuards, ParseIntPipe, Body, Req,ForbiddenException,NotFoundException } from "@nestjs/common";
 import  { EmployeesService } from "./employees.service"
 import  { CreateEmployeeDto } from "./dto/create-employee.dto"
 import  { UpdateEmployeeDto } from "./dto/update-employee.dto"
@@ -25,14 +25,36 @@ export class EmployeesController {
     return this.employeesService.findAll()
   }
 
-
+  @Get('me')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.EMPLOYEE)
+  async getMyEmployee(@Req() req) {
+    return this.employeesService.findByUserId(req.user.sub);
+  }
 
   @Get(':id')
   @UseGuards(RolesGuard)
-  @Roles(UserRole.HR)
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  @Roles(UserRole.HR, UserRole.EMPLOYEE)
+  async findOne(@Param('id', ParseIntPipe) id: number, @Req() req) {
+    const user = req.user; // dari JWT
+
+    if (user.role === UserRole.EMPLOYEE) {
+      const employee = await this.employeesService.findOne(id);
+      if (!employee) throw new NotFoundException('Employee not found');
+
+      // Pastikan employee ini milik user yang login
+      if (employee.userId !== user.sub) {
+        throw new ForbiddenException('Cannot access other employees');
+      }
+
+      return employee;
+    }
+
+    // Kalau HR, boleh akses siapa pun
     return this.employeesService.findOne(id);
   }
+
+  
 
   @Patch(":id")
   @UseGuards(RolesGuard)

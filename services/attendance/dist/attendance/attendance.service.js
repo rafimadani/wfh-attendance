@@ -31,7 +31,8 @@ let AttendanceService = class AttendanceService {
         let employee;
         try {
             console.log(authHeader);
-            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`${this.employeeServiceUrl}/employees/by-user/${createAttendanceDto.employeeId}`, {
+            console.log(createAttendanceDto.employeeId);
+            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`${this.employeeServiceUrl}/employees/me`, {
                 headers: {
                     Authorization: authHeader,
                 },

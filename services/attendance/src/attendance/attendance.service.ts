@@ -34,9 +34,10 @@ export class AttendanceService {
     let employee;
     try {
       console.log(authHeader)
+      console.log(createAttendanceDto.employeeId)
       const response = await firstValueFrom(
         this.httpService.get(
-          `${this.employeeServiceUrl}/employees/by-user/${createAttendanceDto.employeeId}`,
+          `${this.employeeServiceUrl}/employees/me`,
           {
             headers: {
               Authorization: authHeader, 

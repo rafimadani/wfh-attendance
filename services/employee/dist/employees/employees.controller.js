@@ -31,7 +31,20 @@ let EmployeesController = class EmployeesController {
     findAll() {
         return this.employeesService.findAll();
     }
-    findOne(id) {
+    async getMyEmployee(req) {
+        return this.employeesService.findByUserId(req.user.sub);
+    }
+    async findOne(id, req) {
+        const user = req.user;
+        if (user.role === user_role_enum_1.UserRole.EMPLOYEE) {
+            const employee = await this.employeesService.findOne(id);
+            if (!employee)
+                throw new common_1.NotFoundException('Employee not found');
+            if (employee.userId !== user.sub) {
+                throw new common_1.ForbiddenException('Cannot access other employees');
+            }
+            return employee;
+        }
         return this.employeesService.findOne(id);
     }
     update(id, updateEmployeeDto) {
@@ -66,13 +79,23 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], EmployeesController.prototype, "findAll", null);
 __decorate([
+    (0, common_1.Get)('me'),
+    (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.EMPLOYEE),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], EmployeesController.prototype, "getMyEmployee", null);
+__decorate([
     (0, common_1.Get)(':id'),
     (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
-    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.HR),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.HR, user_role_enum_1.UserRole.EMPLOYEE),
     __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:paramtypes", [Number, Object]),
+    __metadata("design:returntype", Promise)
 ], EmployeesController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Patch)(":id"),
