@@ -3,6 +3,7 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { attendanceService } from "../services/attendanceService"
+import { employeeService } from "../services/employeeService" // 👈 added
 
 interface AttendanceRecord {
   id: number
@@ -11,6 +12,11 @@ interface AttendanceRecord {
   photoPath: string
   notes: string
   status: "present" | "absent" | "late"
+  employee?: {
+    firstName: string
+    lastName: string
+    department: string
+  }
 }
 
 export const AttendanceRecords: React.FC = () => {
@@ -26,7 +32,20 @@ export const AttendanceRecords: React.FC = () => {
   const fetchRecords = async () => {
     try {
       const response = await attendanceService.getAll(currentPage, 10)
-      setRecords(response.data)
+      const employees = await employeeService.getAll()
+
+      // enrich attendance with employee info
+      const enriched = response.data.map((r: any) => {
+        const emp = employees.find((e: any) => e.id === r.employeeId)
+        return {
+          ...r,
+          employee: emp
+            ? { firstName: emp.firstName, lastName: emp.lastName, department: emp.department }
+            : null,
+        }
+      })
+
+      setRecords(enriched)
       setTotalPages(Math.ceil(response.total / response.limit))
     } catch (error) {
       console.error("Error fetching attendance records:", error)
@@ -57,7 +76,10 @@ export const AttendanceRecords: React.FC = () => {
               <thead>
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Employee ID
+                    Employee
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Department
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Check-in Time
@@ -76,25 +98,39 @@ export const AttendanceRecords: React.FC = () => {
               <tbody className="divide-y divide-border">
                 {records.map((record) => (
                   <tr key={record.id}>
+                    {/* ✅ Employee Name */}
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">
-                      {record.employeeId}
+                      {record.employee
+                        ? `${record.employee.firstName} ${record.employee.lastName}`
+                        : `ID: ${record.employeeId}`}
                     </td>
+
+                    {/* ✅ Department */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                      {record.employee?.department || "-"}
+                    </td>
+
+                    {/* Check-in Time */}
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                       {new Date(record.checkInTime).toLocaleString()}
                     </td>
+
+                    {/* Status */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                           record.status === "present"
                             ? "bg-green-100 text-green-800"
                             : record.status === "late"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-red-100 text-red-800"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-red-100 text-red-800"
                         }`}
                       >
                         {record.status}
                       </span>
                     </td>
+
+                    {/* Photo */}
                     <td className="px-6 py-4 whitespace-nowrap">
                       {record.photoPath && (
                         <img
@@ -104,7 +140,11 @@ export const AttendanceRecords: React.FC = () => {
                         />
                       )}
                     </td>
-                    <td className="px-6 py-4 text-sm text-foreground max-w-xs truncate">{record.notes || "-"}</td>
+
+                    {/* Notes */}
+                    <td className="px-6 py-4 text-sm text-foreground max-w-xs truncate">
+                      {record.notes || "-"}
+                    </td>
                   </tr>
                 ))}
               </tbody>
