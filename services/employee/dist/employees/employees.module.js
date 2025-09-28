@@ -14,12 +14,13 @@ const employees_controller_1 = require("./employees.controller");
 const employee_entity_1 = require("./entities/employee.entity");
 const auth_module_1 = require("../auth/auth.module");
 const roles_guard_1 = require("../auth/guards/roles.guard");
+const axios_1 = require("@nestjs/axios");
 let EmployeesModule = class EmployeesModule {
 };
 exports.EmployeesModule = EmployeesModule;
 exports.EmployeesModule = EmployeesModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([employee_entity_1.Employee]), auth_module_1.AuthModule],
+        imports: [typeorm_1.TypeOrmModule.forFeature([employee_entity_1.Employee]), auth_module_1.AuthModule, axios_1.HttpModule],
         controllers: [employees_controller_1.EmployeesController],
         providers: [employees_service_1.EmployeesService, roles_guard_1.RolesGuard],
         exports: [employees_service_1.EmployeesService],

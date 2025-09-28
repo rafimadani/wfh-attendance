@@ -18,9 +18,14 @@ const auth_service_1 = require("./auth.service");
 const login_dto_1 = require("./dto/login.dto");
 const register_dto_1 = require("./dto/register.dto");
 const jwt_auth_guard_1 = require("./guards/jwt-auth.guard");
+const users_service_1 = require("../users/users.service");
+const roles_guard_1 = require("../auth/guards/roles.guard");
+const roles_decorator_1 = require("./decorators/roles.decorator");
+const user_entity_1 = require("../users/entities/user.entity");
 let AuthController = class AuthController {
-    constructor(authService) {
+    constructor(authService, usersService) {
         this.authService = authService;
+        this.usersService = usersService;
     }
     async login(loginDto) {
         return this.authService.login(loginDto);
@@ -40,6 +45,9 @@ let AuthController = class AuthController {
                 role: req.user.role,
             },
         };
+    }
+    async deleteUser(id) {
+        return this.usersService.remove(id);
     }
 };
 exports.AuthController = AuthController;
@@ -73,8 +81,17 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "verifyToken", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(user_entity_1.UserRole.HR),
+    (0, common_1.Delete)("users/:id"),
+    __param(0, (0, common_1.Param)("id", common_1.ParseIntPipe)),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "deleteUser", null);
 exports.AuthController = AuthController = __decorate([
     (0, common_1.Controller)("auth"),
-    __metadata("design:paramtypes", [auth_service_1.AuthService])
+    __metadata("design:paramtypes", [auth_service_1.AuthService, users_service_1.UsersService])
 ], AuthController);
 //# sourceMappingURL=auth.controller.js.map

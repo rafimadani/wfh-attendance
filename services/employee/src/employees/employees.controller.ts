@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Param, Delete, UseGuards, ParseIntPipe, Body, Query  } from "@nestjs/common";
+import { Controller, Get, Post, Patch, Param, Delete, UseGuards, ParseIntPipe, Body, Req } from "@nestjs/common";
 import  { EmployeesService } from "./employees.service"
 import  { CreateEmployeeDto } from "./dto/create-employee.dto"
 import  { UpdateEmployeeDto } from "./dto/update-employee.dto"
@@ -25,18 +25,6 @@ export class EmployeesController {
     return this.employeesService.findAll()
   }
 
-  // employees.controller.ts
-  @Get("search")
-  @UseGuards(RolesGuard)
-  @Roles(UserRole.HR)
-  search(
-    @Query("name") name?: string,
-    @Query("position") position?: string,
-  ) {
-    return this.employeesService.search(name, position);
-  }
-
-
   // @Get("stats")
   // @UseGuards(RolesGuard)
   // @Roles(UserRole.HR)
@@ -51,11 +39,6 @@ export class EmployeesController {
     return this.employeesService.findOne(id);
   }
 
-  @Get("by-user/:userId")
-  findByUserId(@Param("userId", ParseIntPipe) userId: number) {
-    return this.employeesService.findByUserId(userId);
-  }
-
   @Patch(":id")
   @UseGuards(RolesGuard)
   @Roles(UserRole.HR)
@@ -66,10 +49,27 @@ export class EmployeesController {
     return this.employeesService.update(id, updateEmployeeDto);
   }
 
-  @Delete(':id')
+  // @Delete(':id')
+  // @UseGuards(RolesGuard)
+  // @Roles(UserRole.HR)
+  // remove(@Param('id', ParseIntPipe) id: number) {
+  //   return this.employeesService.remove(id);
+  // }
+
+    @Delete(":id")
+    @UseGuards(RolesGuard)
+    @Roles(UserRole.HR)
+    remove(@Param("id", ParseIntPipe) id: number, @Req() req) {
+      return this.employeesService.remove(id, req.headers.authorization); // 👈 pass JWT here
+    }
+
+  @Post("with-user")
   @UseGuards(RolesGuard)
-  @Roles(UserRole.HR)
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.employeesService.remove(id);
+  @Roles(UserRole.HR) // HR only
+  async createWithUser(@Body() body: any, @Req() req) {
+    return this.employeesService.createWithUser({
+      ...body,
+      authHeader: req.headers.authorization, // 👈 forward JWT if needed
+    });
   }
 }

@@ -43,6 +43,9 @@ let UsersService = class UsersService {
     async validatePassword(user, password) {
         return await bcrypt.compare(password, user.password);
     }
+    async remove(id) {
+        await this.usersRepository.delete(id);
+    }
 };
 exports.UsersService = UsersService;
 exports.UsersService = UsersService = __decorate([

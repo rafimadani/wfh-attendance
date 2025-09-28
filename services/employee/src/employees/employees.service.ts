@@ -13,20 +13,70 @@
  * - User relationship: Employees are linked to User accounts for authentication
  */
 
-import { Injectable, NotFoundException, ConflictException } from "@nestjs/common";
+import { Injectable, NotFoundException, ConflictException,BadRequestException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Employee } from "./entities/employee.entity";
 import { CreateEmployeeDto } from "./dto/create-employee.dto";
 import { UpdateEmployeeDto } from "./dto/update-employee.dto";
+import { HttpService } from "@nestjs/axios";
+import { firstValueFrom } from "rxjs";
 
 @Injectable()
 export class EmployeesService {
   constructor(
     @InjectRepository(Employee)
     private readonly employeesRepository: Repository<Employee>,
+    private readonly httpService: HttpService,
   ) {}
 
+  async createWithUser(
+    body: CreateEmployeeDto & { email: string; password: string; authHeader?: string }
+  ): Promise<Employee> {
+    let user;
+    try {
+      // Step 1: Call Auth Service to register user
+      const response = await firstValueFrom(
+        this.httpService.post(
+          "http://auth-service:3001/auth/register", // 👈 change host/port as needed
+          {
+            email: body.email,
+            password: body.password,
+          },
+          body.authHeader ? { headers: { Authorization: body.authHeader } } : {},
+        )
+      );
+      user = response.data.user;
+    } catch (err) {
+      console.error("❌ Error creating user:", err.response?.data || err.message);
+      throw new BadRequestException("Failed to create user");
+    }
+
+    try {
+      // Step 2: Create Employee linked with user.id
+      const { email, password, authHeader, ...employeeData } = body;
+      const employee = this.employeesRepository.create({
+        ...employeeData,
+        userId: user.id,
+      });
+      return await this.employeesRepository.save(employee);
+    } catch (err) {
+      console.error("❌ Error creating employee, rolling back user:", err);
+
+      // Step 3: Rollback user if employee creation fails
+      if (user?.id) {
+        try {
+          await firstValueFrom(
+            this.httpService.delete(`http://auth-service:3001/users/${user.id}`)
+          );
+        } catch (rollbackErr) {
+          console.error("⚠️ Failed to rollback user:", rollbackErr.message);
+        }
+      }
+
+      throw new BadRequestException("Failed to create employee");
+    }
+  }
   async create(createEmployeeDto: CreateEmployeeDto): Promise<Employee> {
     const existing = await this.employeesRepository.findOne({
       where: { employeeId: createEmployeeDto.employeeId },
@@ -38,6 +88,9 @@ export class EmployeesService {
     const employee = this.employeesRepository.create(createEmployeeDto);
     return this.employeesRepository.save(employee);
   }
+
+   
+  
 
   async findAll(): Promise<Employee[]> {
     return this.employeesRepository.find({
@@ -97,10 +150,78 @@ export class EmployeesService {
     return this.employeesRepository.save(employee);
   }
 
-  async remove(id: number): Promise<void> {
-    const employee = await this.findOne(id);
-    await this.employeesRepository.remove(employee);
+  async remove(id: number, authHeader?: string): Promise<void> {
+  const employee = await this.findOne(id);
+  // console.log(employee);
+
+  if (employee.userId) {
+    try {
+      await firstValueFrom(
+        this.httpService.delete(
+          `http://auth-service:3001/auth/users/${employee.userId}`,
+          authHeader ? { headers: { Authorization: authHeader } } : {},
+        ),
+      );
+    } catch (err) {
+      // console.error("❌ Failed to delete user in Auth service:", err.response?.data || err.message);
+      throw new BadRequestException("Failed to delete linked user, employee not deleted");
+    }
   }
+
+  await this.employeesRepository.remove(employee);
+}
+
+
+
+
+//   async registerWithUser(
+//   email: string,
+//   password: string,
+//   employeeData: any,
+//   authHeader?: string,
+// ) {
+//     let user;
+//     try {
+//       // Step 1: Create user via Auth Service
+//       const response = await firstValueFrom(
+//         this.httpService.post(
+//           `${this.authServiceUrl}/auth/register`,
+//           { email, password, role: "employee" }, // enforce employee role
+//           { headers: { Authorization: authHeader } },
+//         ),
+//       );
+//       user = response.data.user;
+//     } catch (err) {
+//       console.error("❌ Error creating user:", err.response?.data || err.message);
+//       throw new BadRequestException("Failed to create user");
+//     }
+
+//     try {
+//       // Step 2: Create employee linked with user.id
+//       const employee = this.employeeRepository.create({
+//         ...employeeData,
+//         userId: user.id,
+//       });
+//       return await this.employeeRepository.save(employee);
+//     } catch (err) {
+//       console.error("❌ Error creating employee, rolling back user:", err);
+
+//       // Step 3: Rollback user if employee creation fails
+//       if (user?.id) {
+//         try {
+//           await firstValueFrom(
+//             this.httpService.delete(`${this.authServiceUrl}/users/${user.id}`, {
+//               headers: { Authorization: authHeader },
+//             }),
+//           );
+//         } catch (rollbackErr) {
+//           console.error("⚠️ Failed to rollback user:", rollbackErr.message);
+//         }
+//       }
+
+//       throw new BadRequestException("Failed to create employee");
+//     }
+//   }
 
 
   async getEmployeeStats() {

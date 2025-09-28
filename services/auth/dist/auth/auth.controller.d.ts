@@ -1,15 +1,18 @@
 import { AuthService } from "./auth.service";
 import { LoginDto } from "./dto/login.dto";
 import { RegisterDto } from "./dto/register.dto";
+import { UsersService } from "../users/users.service";
+import { UserRole } from "../users/entities/user.entity";
 export declare class AuthController {
     private authService;
-    constructor(authService: AuthService);
+    private readonly usersService;
+    constructor(authService: AuthService, usersService: UsersService);
     login(loginDto: LoginDto): Promise<{
         access_token: string;
         user: {
             id: number;
             email: string;
-            role: import("../users/entities/user.entity").UserRole;
+            role: UserRole;
         };
     }>;
     register(registerDto: RegisterDto): Promise<{
@@ -17,13 +20,13 @@ export declare class AuthController {
         user: {
             id: number;
             email: string;
-            role: import("../users/entities/user.entity").UserRole;
+            role: UserRole;
         };
     }>;
     getProfile(req: any): Promise<{
         id: number;
         email: string;
-        role: import("../users/entities/user.entity").UserRole;
+        role: UserRole;
         createdAt: Date;
     }>;
     verifyToken(req: any): Promise<{
@@ -34,4 +37,5 @@ export declare class AuthController {
             role: any;
         };
     }>;
+    deleteUser(id: number): Promise<void>;
 }

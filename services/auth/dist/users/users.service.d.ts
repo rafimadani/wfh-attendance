@@ -8,4 +8,5 @@ export declare class UsersService {
     findByEmail(email: string): Promise<User | null>;
     findById(id: number): Promise<User | null>;
     validatePassword(user: User, password: string): Promise<boolean>;
+    remove(id: number): Promise<void>;
 }

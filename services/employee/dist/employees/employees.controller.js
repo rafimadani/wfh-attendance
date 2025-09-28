@@ -31,20 +31,20 @@ let EmployeesController = class EmployeesController {
     findAll() {
         return this.employeesService.findAll();
     }
-    search(name, position) {
-        return this.employeesService.search(name, position);
-    }
     findOne(id) {
         return this.employeesService.findOne(id);
-    }
-    findByUserId(userId) {
-        return this.employeesService.findByUserId(userId);
     }
     update(id, updateEmployeeDto) {
         return this.employeesService.update(id, updateEmployeeDto);
     }
-    remove(id) {
-        return this.employeesService.remove(id);
+    remove(id, req) {
+        return this.employeesService.remove(id, req.headers.authorization);
+    }
+    async createWithUser(body, req) {
+        return this.employeesService.createWithUser({
+            ...body,
+            authHeader: req.headers.authorization,
+        });
     }
 };
 exports.EmployeesController = EmployeesController;
@@ -66,16 +66,6 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], EmployeesController.prototype, "findAll", null);
 __decorate([
-    (0, common_1.Get)("search"),
-    (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
-    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.HR),
-    __param(0, (0, common_1.Query)("name")),
-    __param(1, (0, common_1.Query)("position")),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
-    __metadata("design:returntype", void 0)
-], EmployeesController.prototype, "search", null);
-__decorate([
     (0, common_1.Get)(':id'),
     (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
     (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.HR),
@@ -84,13 +74,6 @@ __decorate([
     __metadata("design:paramtypes", [Number]),
     __metadata("design:returntype", void 0)
 ], EmployeesController.prototype, "findOne", null);
-__decorate([
-    (0, common_1.Get)("by-user/:userId"),
-    __param(0, (0, common_1.Param)("userId", common_1.ParseIntPipe)),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number]),
-    __metadata("design:returntype", void 0)
-], EmployeesController.prototype, "findByUserId", null);
 __decorate([
     (0, common_1.Patch)(":id"),
     (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
@@ -102,14 +85,25 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], EmployeesController.prototype, "update", null);
 __decorate([
-    (0, common_1.Delete)(':id'),
+    (0, common_1.Delete)(":id"),
     (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
     (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.HR),
-    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __param(0, (0, common_1.Param)("id", common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number]),
+    __metadata("design:paramtypes", [Number, Object]),
     __metadata("design:returntype", void 0)
 ], EmployeesController.prototype, "remove", null);
+__decorate([
+    (0, common_1.Post)("with-user"),
+    (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.HR),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], EmployeesController.prototype, "createWithUser", null);
 exports.EmployeesController = EmployeesController = __decorate([
     (0, common_1.Controller)("employees"),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

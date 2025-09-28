@@ -47,6 +47,7 @@ export class AuthService {
     // throw new Error("TODO: Implement user validation")
   }
 
+
   async login(loginDto: LoginDto) {
     // TODO: Validate user credentials using validateUser method
     // TODO: If invalid, throw UnauthorizedException with "Invalid credentials"

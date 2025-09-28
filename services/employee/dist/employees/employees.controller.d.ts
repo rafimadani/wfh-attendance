@@ -6,9 +6,8 @@ export declare class EmployeesController {
     constructor(employeesService: EmployeesService);
     create(createEmployeeDto: CreateEmployeeDto): Promise<import("./entities/employee.entity").Employee>;
     findAll(): Promise<import("./entities/employee.entity").Employee[]>;
-    search(name?: string, position?: string): Promise<import("./entities/employee.entity").Employee[]>;
     findOne(id: number): Promise<import("./entities/employee.entity").Employee>;
-    findByUserId(userId: number): Promise<import("./entities/employee.entity").Employee>;
     update(id: number, updateEmployeeDto: UpdateEmployeeDto): Promise<import("./entities/employee.entity").Employee>;
-    remove(id: number): Promise<void>;
+    remove(id: number, req: any): Promise<void>;
+    createWithUser(body: any, req: any): Promise<import("./entities/employee.entity").Employee>;
 }

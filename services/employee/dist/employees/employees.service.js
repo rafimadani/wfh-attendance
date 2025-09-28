@@ -17,9 +17,46 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const employee_entity_1 = require("./entities/employee.entity");
+const axios_1 = require("@nestjs/axios");
+const rxjs_1 = require("rxjs");
 let EmployeesService = class EmployeesService {
-    constructor(employeesRepository) {
+    constructor(employeesRepository, httpService) {
         this.employeesRepository = employeesRepository;
+        this.httpService = httpService;
+    }
+    async createWithUser(body) {
+        let user;
+        try {
+            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.post("http://auth-service:3001/auth/register", {
+                email: body.email,
+                password: body.password,
+            }, body.authHeader ? { headers: { Authorization: body.authHeader } } : {}));
+            user = response.data.user;
+        }
+        catch (err) {
+            console.error("❌ Error creating user:", err.response?.data || err.message);
+            throw new common_1.BadRequestException("Failed to create user");
+        }
+        try {
+            const { email, password, authHeader, ...employeeData } = body;
+            const employee = this.employeesRepository.create({
+                ...employeeData,
+                userId: user.id,
+            });
+            return await this.employeesRepository.save(employee);
+        }
+        catch (err) {
+            console.error("❌ Error creating employee, rolling back user:", err);
+            if (user?.id) {
+                try {
+                    await (0, rxjs_1.firstValueFrom)(this.httpService.delete(`http://auth-service:3001/users/${user.id}`));
+                }
+                catch (rollbackErr) {
+                    console.error("⚠️ Failed to rollback user:", rollbackErr.message);
+                }
+            }
+            throw new common_1.BadRequestException("Failed to create employee");
+        }
     }
     async create(createEmployeeDto) {
         const existing = await this.employeesRepository.findOne({
@@ -72,8 +109,16 @@ let EmployeesService = class EmployeesService {
         Object.assign(employee, updateEmployeeDto);
         return this.employeesRepository.save(employee);
     }
-    async remove(id) {
+    async remove(id, authHeader) {
         const employee = await this.findOne(id);
+        if (employee.userId) {
+            try {
+                await (0, rxjs_1.firstValueFrom)(this.httpService.delete(`http://auth-service:3001/auth/users/${employee.userId}`, authHeader ? { headers: { Authorization: authHeader } } : {}));
+            }
+            catch (err) {
+                throw new common_1.BadRequestException("Failed to delete linked user, employee not deleted");
+            }
+        }
         await this.employeesRepository.remove(employee);
     }
     async getEmployeeStats() {
@@ -84,6 +129,7 @@ exports.EmployeesService = EmployeesService;
 exports.EmployeesService = EmployeesService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(employee_entity_1.Employee)),
-    __metadata("design:paramtypes", [typeorm_2.Repository])
+    __metadata("design:paramtypes", [typeorm_2.Repository,
+        axios_1.HttpService])
 ], EmployeesService);
 //# sourceMappingURL=employees.service.js.map
